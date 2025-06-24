@@ -20,3 +20,9 @@ variable "portfolio_owner" {
 variable "org_id" {
   type        = string
 }
+
+variable "account_id" {
+  description = "Target AWS account to share the portfolio with"
+  type        = string
+}
+
