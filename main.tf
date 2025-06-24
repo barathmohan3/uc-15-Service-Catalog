@@ -67,5 +67,5 @@ resource "aws_cloudformation_stack" "sc_stack" {
 resource "aws_servicecatalog_portfolio_share" "org_share" {
   portfolio_id = aws_servicecatalog_portfolio.portfolio.id
   principal_id = 650251701672  # Must be o-xxxxxxxx
-  type         = "ORGANIZATION"
+  type         = "ACCOUNT"
 }
