@@ -68,6 +68,6 @@ resource "aws_cloudformation_stack" "sc_stack" {
 # Share the Portfolio across the Organization
 resource "aws_servicecatalog_portfolio_share" "org_share" {
   portfolio_id = aws_servicecatalog_portfolio.portfolio.id
-  principal_id = var.org_id
+  principal_id = var.account_id
   type         = "ORGANIZATION"
 }
