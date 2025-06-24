@@ -39,12 +39,13 @@ Resources:
       ProductId: !Ref Product
 
   # 3. Launch Constraint using IAM Role
-  LaunchConstraint:
-    Type: AWS::ServiceCatalog::LaunchRoleConstraint
-    Properties:
-      PortfolioId: !Ref PortfolioId
-      ProductId: !Ref Product
-      RoleArn: !Ref RoleArn
+  PortfolioShare:
+  Type: AWS::ServiceCatalog::PortfolioShare
+  Properties:
+    PortfolioId: !Ref PortfolioId
+    OrganizationNode:
+      Type: ORGANIZATION
+      Value: !Ref OrgId
 
 
   # 4. Share Portfolio with Organization
