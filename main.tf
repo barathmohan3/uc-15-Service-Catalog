@@ -35,20 +35,6 @@ resource "aws_servicecatalog_portfolio" "portfolio" {
 }
 
 resource "aws_cloudformation_stack" "sc_stack" {
-  name = "SCProductSetupStack"
-
-  template_body = file("${path.module}/templates/sc_setup.yaml")
-  capabilities  = ["CAPABILITY_NAMED_IAM"]
-
-  parameters = {
-    PortfolioId = aws_servicecatalog_portfolio.portfolio.id
-    ArtifactUrl = "https://${aws_s3_bucket.artifact_bucket.bucket}.s3.amazonaws.com/${aws_s3_bucket_object.helloworld_tar.key}"
-    RoleArn     = aws_iam_role.launch_role.arn
-    OrgId       = var.organization_id
-  }
-}
-
-resource "aws_cloudformation_stack" "sc_stack" {
   name          = "SCProductSetupStack"
   template_body = file("${path.module}/templates/sc_setup.yaml")
 
