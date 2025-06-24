@@ -18,7 +18,5 @@ variable "portfolio_owner" {
 }
 
 variable "org_id" {
-  description = "AWS Organization ID (e.g., o-xxxxxxx)"
   type        = string
-
 }
