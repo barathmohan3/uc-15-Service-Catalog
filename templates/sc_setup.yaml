@@ -39,7 +39,7 @@ Resources:
       ProductId: !Ref Product
 
   # 3. Launch Constraint using IAM Role
-    LaunchConstraint:
+  LaunchConstraint:
     Type: AWS::ServiceCatalog::LaunchRoleConstraint
     Properties:
       PortfolioId: !Ref PortfolioId
