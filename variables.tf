@@ -18,7 +18,7 @@ variable "portfolio_owner" {
   default     = "YourCompany"
 }
 
-variable "organization_id" {
+variable "org_id" {
   description = "AWS Organization ID (e.g., o-xxxxxxx)"
   type        = string
 }
