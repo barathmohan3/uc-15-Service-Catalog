@@ -1,8 +1,23 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Simple CloudFormation template for HelloWorld
+Description: HelloWorld S3 Website Bucket
 
 Resources:
   HelloWorldBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: helloworld-sample-bucket-${AWS::AccountId}
+      BucketName: !Sub helloworld-web-${AWS::AccountId}
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+
+  PublicReadPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref HelloWorldBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::helloworld-web-${AWS::AccountId}/*"
