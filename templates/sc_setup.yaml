@@ -1,19 +1,18 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Setup AWS Service Catalog Product and Share across the Organization
+Description: Setup AWS Service Catalog Product and Launch Constraint
 
 Parameters:
   PortfolioId:
     Type: String
     Description: The ID of the existing portfolio
+
   ArtifactUrl:
     Type: String
     Description: S3 URL to the product's CloudFormation template or Terraform tar.gz
+
   RoleArn:
     Type: String
     Description: IAM Role ARN to be used as a launch constraint
-  OrgId:
-    Type: String
-    Description: AWS Organization ID (Root ID like o-xxxxxx or OU ID like ou-xxxxxx)
 
 Resources:
 
@@ -22,7 +21,7 @@ Resources:
     Properties:
       Name: HelloWorldProduct
       Owner: BM
-      Description: A simple HelloWorld SC product with a Terraform tarball
+      Description: A simple HelloWorld SC product using a CloudFormation template
       ProvisioningArtifactParameters:
         - Name: v1
           Type: CLOUD_FORMATION_TEMPLATE
@@ -42,11 +41,3 @@ Resources:
       PortfolioId: !Ref PortfolioId
       ProductId: !Ref Product
       RoleArn: !Ref RoleArn
-
-  PortfolioShare:
-    Type: AWS::ServiceCatalog::PortfolioShare
-    Properties:
-      PortfolioId: !Ref PortfolioId
-      OrganizationNode:
-        Type: ORGANIZATION   # or ORGANIZATIONAL_UNIT
-        Value: !Ref OrgId
