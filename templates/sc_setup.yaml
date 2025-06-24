@@ -5,11 +5,9 @@ Parameters:
   PortfolioId:
     Type: String
     Description: The ID of the existing portfolio
-
   ArtifactUrl:
     Type: String
     Description: S3 URL to the product's CloudFormation template
-
   RoleArn:
     Type: String
     Description: IAM Role ARN to be used as a launch constraint
@@ -33,11 +31,11 @@ Resources:
     Type: AWS::ServiceCatalog::PortfolioProductAssociation
     Properties:
       PortfolioId: !Ref PortfolioId
-      ProductId: !Ref Product
+      ProductId: !GetAtt Product.Id
 
   LaunchConstraint:
     Type: AWS::ServiceCatalog::LaunchRoleConstraint
     Properties:
       PortfolioId: !Ref PortfolioId
-      ProductId: !Ref Product
+      ProductId: !GetAtt Product.Id
       RoleArn: !Ref RoleArn
