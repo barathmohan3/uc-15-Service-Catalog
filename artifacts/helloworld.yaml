@@ -1,23 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: HelloWorld S3 Website Bucket
+Description: Create an S3 Bucket with a name provided by the user
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Enter a globally unique name for the S3 bucket
 
 Resources:
-  HelloWorldBucket:
+  MyS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub helloworld-web-${AWS::AccountId}
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: error.html
-
-  PublicReadPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref HelloWorldBucket
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal: "*"
-            Action: "s3:GetObject"
-            Resource: !Sub "arn:aws:s3:::helloworld-web-${AWS::AccountId}/*"
+      BucketName: !Ref BucketName
