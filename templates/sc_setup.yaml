@@ -46,7 +46,6 @@ Resources:
   PortfolioShare:
     Type: AWS::ServiceCatalog::PortfolioShare
     Properties:
-      PortfolioId: !Ref PortfolioId
-      OrganizationNode:
-        Type: ORGANIZATION
-        Value: !Ref OrgId
+       PortfolioId: !Ref PortfolioId
+       PrincipalType: ORGANIZATION
+
