@@ -5,7 +5,6 @@ terraform {
       version = ">= 5.31.0"
     }
   }
-
   required_version = ">= 1.3.0"
 }
 
@@ -13,83 +12,70 @@ provider "aws" {
   region = var.region
 }
 
-# Create S3 bucket to store CloudFormation template
+# S3 bucket and objects
 resource "aws_s3_bucket" "artifact_bucket" {
   bucket        = var.bucket_name
   force_destroy = true
 }
 
-# Upload the CloudFormation template to S3
 resource "aws_s3_object" "helloworld_template" {
-  bucket = aws_s3_bucket.artifact_bucket.id
-  key    = "helloworld.yaml"
-  source = "${path.module}/artifacts/helloworld.yaml"
-  etag   = filemd5("${path.module}/artifacts/helloworld.yaml")
+  bucket       = aws_s3_bucket.artifact_bucket.id
+  key          = "helloworld.yaml"
+  source       = "${path.module}/artifacts/helloworld.yaml"
+  etag         = filemd5("${path.module}/artifacts/helloworld.yaml")
 }
 
-resource "aws_s3_object" "index_file" {
-  bucket = aws_s3_bucket.artifact_bucket.id
-  key    = "index.html"
-  source = "${path.module}/artifacts/index.html"
-  content_type = "text/html"
-  etag   = filemd5("${path.module}/artifacts/index.html")
-}
-
-# IAM Role used by Service Catalog to launch the product
+# IAM Launch Role
 resource "aws_iam_role" "launch_role" {
   name = "ServiceCatalogLaunchRole"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "servicecatalog.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "servicecatalog.amazonaws.com" }
+      Action    = "sts:AssumeRole"
     }]
   })
 }
 
-# Create the Portfolio
+# Portfolio
 resource "aws_servicecatalog_portfolio" "portfolio" {
   name          = var.portfolio_name
   description   = "Portfolio created by Terraform"
   provider_name = var.portfolio_owner
 }
 
-# Create a CloudFormation stack to provision the SC Product and LaunchConstraint
-resource "aws_cloudformation_stack" "sc_stack" {
-  name          = "SCProductSetupStack"
-  template_body = file("${path.module}/templates/sc_setup.yaml")
+# Create Product directly in Terraform
+resource "aws_servicecatalog_product" "helloworld" {
+  name              = "HelloWorldProduct"
+  owner             = "BM"
+  description       = "HelloWorld Service Catalog product"
+  type              = "CLOUD_FORMATION_TEMPLATE"
 
-  parameters = {
-    PortfolioId = aws_servicecatalog_portfolio.portfolio.id
-    ArtifactUrl = "https://${aws_s3_bucket.artifact_bucket.bucket}.s3.amazonaws.com/${aws_s3_object.helloworld_template.key}"
-    RoleArn     = aws_iam_role.launch_role.arn
+  provisioning_artifact_parameters {
+    name          = "v1"
+    description   = "Initial version"
+    type          = "CLOUD_FORMATION_TEMPLATE"
+    template_url  = "https://${aws_s3_bucket.artifact_bucket.bucket}.s3.amazonaws.com/${aws_s3_object.helloworld_template.key}"
   }
-
-  capabilities = ["CAPABILITY_NAMED_IAM"]
 }
 
-# Wait for the stack to finish, then use data lookup to get ProductId
-data "aws_servicecatalog_product" "helloworld" {
-  name = "HelloWorldProduct"
-}
-
-resource "aws_servicecatalog_portfolio_product_association" "assoc" {
+# Associate Product with Portfolio
+resource "aws_servicecatalog_product_portfolio_association" "assoc" {
   portfolio_id = aws_servicecatalog_portfolio.portfolio.id
-  product_id   = data.aws_servicecatalog_product.helloworld.id
+  product_id   = aws_servicecatalog_product.helloworld.id
 }
 
+# Create Launch Constraint
 resource "aws_servicecatalog_launch_constraint" "launch" {
   portfolio_id = aws_servicecatalog_portfolio.portfolio.id
-  product_id   = data.aws_servicecatalog_product.helloworld.id
+  product_id   = aws_servicecatalog_product.helloworld.id
   role_arn     = aws_iam_role.launch_role.arn
 }
 
-# Share the Portfolio with the organization
-resource "aws_servicecatalog_portfolio_share" "org_share" {
+# Share with AWS Account
+resource "aws_servicecatalog_portfolio_share" "account_share" {
   portfolio_id = aws_servicecatalog_portfolio.portfolio.id
-  principal_id = 211125784755  # Must be o-xxxxxxxx
+  principal_id = var.account_id
   type         = "ACCOUNT"
 }
