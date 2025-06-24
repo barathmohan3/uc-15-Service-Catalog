@@ -1,2 +1,5 @@
-helloworld_source_path = "./helloworld.tar.gz"
-organization_id        = "o-abcde12345" # Replace with your AWS Org ID
+region           = "us-east-1"
+bucket_name      = "your-unique-sc-bucket-name"
+portfolio_name   = "HelloWorldPortfolio"
+portfolio_owner  = "BM"
+organization_id  = "o-xxxxxxxxxx"
