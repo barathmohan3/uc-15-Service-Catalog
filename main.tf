@@ -71,6 +71,22 @@ resource "aws_cloudformation_stack" "sc_stack" {
   capabilities = ["CAPABILITY_NAMED_IAM"]
 }
 
+# Wait for the stack to finish, then use data lookup to get ProductId
+data "aws_servicecatalog_product" "helloworld" {
+  name = "HelloWorldProduct"
+}
+
+resource "aws_servicecatalog_portfolio_product_association" "assoc" {
+  portfolio_id = aws_servicecatalog_portfolio.portfolio.id
+  product_id   = data.aws_servicecatalog_product.helloworld.id
+}
+
+resource "aws_servicecatalog_launch_constraint" "launch" {
+  portfolio_id = aws_servicecatalog_portfolio.portfolio.id
+  product_id   = data.aws_servicecatalog_product.helloworld.id
+  role_arn     = aws_iam_role.launch_role.arn
+}
+
 # Share the Portfolio with the organization
 resource "aws_servicecatalog_portfolio_share" "org_share" {
   portfolio_id = aws_servicecatalog_portfolio.portfolio.id
