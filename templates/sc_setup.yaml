@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Setup AWS Service Catalog Product and Share it across Organization
+
+Parameters:
+  PortfolioId:
+    Type: String
+    Description: The ID of the existing portfolio
+  ArtifactUrl:
+    Type: String
+    Description: S3 URL to the product's CloudFormation template or tar.gz
+  RoleArn:
+    Type: String
+    Description: IAM role for launch constraint
+  OrgId:
+    Type: String
+    Description: AWS Organization ID
+
+Resources:
+
+  # 1. Create Product
+  Product:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties:
+      Name: HelloWorldProduct
+      Owner: BM
+      Description: A simple HelloWorld SC product with artifact
+      ProvisioningArtifactParameters:
+        - Name: v1
+          Type: CLOUD_FORMATION_TEMPLATE
+          Description: First version
+          Info:
+            LoadTemplateFromURL: !Ref ArtifactUrl
+
+  # 2. Associate Product to Portfolio
+  PortfolioAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref PortfolioId
+      ProductId: !Ref Product
+
+  # 3. Launch Constraint using IAM Role
+  LaunchConstraint:
+    Type: AWS::ServiceCatalog::LaunchConstraint
+    Properties:
+      PortfolioId: !Ref PortfolioId
+      ProductId: !Ref Product
+      RoleArn: !Ref RoleArn
+
+  # 4. Share Portfolio with Organization
+  PortfolioShare:
+    Type: AWS::ServiceCatalog::PortfolioShare
+    Properties:
+      PortfolioId: !Ref PortfolioId
+      PrincipalType: ORGANIZATION
+      PrincipalId: !Ref OrgId
