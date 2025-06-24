@@ -1,15 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Setup AWS Service Catalog Product Only
+Description: Setup AWS Service Catalog Product and Launch Constraint
 
 Parameters:
   PortfolioId:
     Type: String
     Description: The ID of the existing portfolio
+
   ArtifactUrl:
     Type: String
     Description: S3 URL to the product's CloudFormation template
 
+  RoleArn:
+    Type: String
+    Description: IAM Role ARN to be used as a launch constraint
+
 Resources:
+
   Product:
     Type: AWS::ServiceCatalog::CloudFormationProduct
     Properties:
@@ -22,3 +28,16 @@ Resources:
           Description: First version
           Info:
             LoadTemplateFromURL: !Ref ArtifactUrl
+
+  PortfolioAssociation:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties:
+      PortfolioId: !Ref PortfolioId
+      ProductId: !Ref Product
+
+  LaunchConstraint:
+    Type: AWS::ServiceCatalog::LaunchRoleConstraint
+    Properties:
+      PortfolioId: !Ref PortfolioId
+      ProductId: !Ref Product
+      RoleArn: !Ref RoleArn
