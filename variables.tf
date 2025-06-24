@@ -1,30 +1,20 @@
-variable "region" {
-  description = "AWS region"
-  default     = "us-east-1"
-}
 
-variable "bucket_name" {
-  description = "Unique S3 bucket name to store artifacts"
+
+variable "template_url" {
+  description = "URL of the CloudFormation template"
   type        = string
+  default = "https://demobucketforservicecatalog.s3.us-east-1.amazonaws.com/todaydemo/bucket-old.yaml"
 }
 
-variable "portfolio_name" {
-  description = "Name of the Service Catalog portfolio"
-  default     = "HelloWorldPortfolio"
-}
-
-variable "portfolio_owner" {
-  description = "Owner of the portfolio"
-  default     = "YourCompany"
-}
-
-variable "org_id" {
-  description = "AWS Organization ID (e.g., o-xxxxxxx)"
+variable "launch_role_arn" {
+  description = "ARN of the IAM role for launching the product"
   type        = string
+  default = "arn:aws:iam::676206899900:role/servicecatalogaccesss"
 }
 
-variable "account_id" {
-  description = "Target AWS account to share the portfolio with"
+variable "user_arn" {
+  description = "ARN of the IAM user for accessing the portfolio"
   type        = string
-}
+  default = "arn:aws:iam::676206899900:user/svc"
 
+}
