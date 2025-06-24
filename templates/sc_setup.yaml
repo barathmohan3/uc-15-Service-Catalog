@@ -13,7 +13,7 @@ Parameters:
     Description: IAM Role ARN to be used as a launch constraint
   OrgId:
     Type: String
-    Description: AWS Organization ID
+    Description: AWS Organization ID (Root ID like o-xxxxxx or OU ID like ou-xxxxxx)
 
 Resources:
 
@@ -46,6 +46,7 @@ Resources:
   PortfolioShare:
     Type: AWS::ServiceCatalog::PortfolioShare
     Properties:
-       PortfolioId: !Ref PortfolioId
-       PrincipalType: ORGANIZATION
-
+      PortfolioId: !Ref PortfolioId
+      OrganizationNode:
+        Type: ORGANIZATION   # or ORGANIZATIONAL_UNIT
+        Value: !Ref OrgId
