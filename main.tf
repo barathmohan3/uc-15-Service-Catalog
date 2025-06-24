@@ -22,23 +22,6 @@ resource "aws_servicecatalog_product_portfolio_association" "association" {
 }
 
 
-resource "aws_servicecatalog_constraint" "template_constraint" {
-  portfolio_id = aws_servicecatalog_portfolio.s3_portfolio.id
-  product_id   = aws_servicecatalog_product.s3_product.id
-  type         = "TEMPLATE"
-  parameters   = jsonencode({
-    Rules = {
-      RegionRule = {
-        Assertions = [
-          {
-            Assert = "Fn::Equals([Ref(\"AWS::Region\"), \"us-east-1\"])"
-            AssertDescription = "S3 buckets must be created in us-east-1"
-          }
-        ]
-      }
-    }
-  })
-}
 
 resource "aws_servicecatalog_constraint" "launch_constraint" {
   portfolio_id = aws_servicecatalog_portfolio.s3_portfolio.id
