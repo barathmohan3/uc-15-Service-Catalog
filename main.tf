@@ -21,8 +21,8 @@ resource "aws_s3_bucket" "artifact_bucket" {
 resource "aws_s3_object" "helloworld_template" {
   bucket = aws_s3_bucket.artifact_bucket.id
   key    = "helloworld.yaml"
-  source = "${path.module}/artifacts/helloworld.yaml"
-  etag   = filemd5("${path.module}/artifacts/helloworld.yaml")
+  source = "${path.module}/helloworld.yaml"
+  etag   = filemd5("${path.module}/helloworld.yaml")
 }
 
 # IAM Launch Role
