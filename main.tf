@@ -19,10 +19,10 @@ resource "aws_s3_bucket" "artifact_bucket" {
 }
 
 resource "aws_s3_object" "helloworld_template" {
-  bucket       = aws_s3_bucket.artifact_bucket.id
-  key          = "helloworld.yaml"
-  source       = "${path.module}/artifacts/helloworld.yaml"
-  etag         = filemd5("${path.module}/artifacts/helloworld.yaml")
+  bucket = aws_s3_bucket.artifact_bucket.id
+  key    = "helloworld.yaml"
+  source = "${path.module}/artifacts/helloworld.yaml"
+  etag   = filemd5("${path.module}/artifacts/helloworld.yaml")
 }
 
 # IAM Launch Role
@@ -30,11 +30,15 @@ resource "aws_iam_role" "launch_role" {
   name = "ServiceCatalogLaunchRole"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "servicecatalog.amazonaws.com" }
-      Action    = "sts:AssumeRole"
-    }]
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "servicecatalog.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
   })
 }
 
@@ -45,37 +49,23 @@ resource "aws_servicecatalog_portfolio" "portfolio" {
   provider_name = var.portfolio_owner
 }
 
-# Create Product directly in Terraform
-resource "aws_servicecatalog_product" "helloworld" {
-  name              = "HelloWorldProduct"
-  owner             = "BM"
-  description       = "HelloWorld Service Catalog product"
-  type              = "CLOUD_FORMATION_TEMPLATE"
+# CloudFormation stack to create Product, Portfolio association, and LaunchConstraint
+resource "aws_cloudformation_stack" "sc_stack" {
+  name          = "SCProductSetupStack"
+  template_body = file("${path.module}/templates/sc_setup.yaml")
 
-  provisioning_artifact_parameters {
-    name          = "v1"
-    description   = "Initial version"
-    type          = "CLOUD_FORMATION_TEMPLATE"
-    template_url  = "https://${aws_s3_bucket.artifact_bucket.bucket}.s3.amazonaws.com/${aws_s3_object.helloworld_template.key}"
+  parameters = {
+    PortfolioId = aws_servicecatalog_portfolio.portfolio.id
+    ArtifactUrl = "https://${aws_s3_bucket.artifact_bucket.bucket}.s3.amazonaws.com/${aws_s3_object.helloworld_template.key}"
+    RoleArn     = aws_iam_role.launch_role.arn
   }
+
+  capabilities = ["CAPABILITY_NAMED_IAM"]
 }
 
-# Associate Product with Portfolio
-resource "aws_servicecatalog_product_portfolio_association" "assoc" {
-  portfolio_id = aws_servicecatalog_portfolio.portfolio.id
-  product_id   = aws_servicecatalog_product.helloworld.id
-}
-
-# Create Launch Constraint
-resource "aws_servicecatalog_launch_constraint" "launch" {
-  portfolio_id = aws_servicecatalog_portfolio.portfolio.id
-  product_id   = aws_servicecatalog_product.helloworld.id
-  role_arn     = aws_iam_role.launch_role.arn
-}
-
-# Share with AWS Account
+# Share portfolio with another AWS account
 resource "aws_servicecatalog_portfolio_share" "account_share" {
   portfolio_id = aws_servicecatalog_portfolio.portfolio.id
-  principal_id = var.account_id
+  principal_id = var.account_id  # Must be 12-digit AWS account ID
   type         = "ACCOUNT"
 }
