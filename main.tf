@@ -12,7 +12,6 @@ resource "aws_s3_bucket_object" "helloworld_tar" {
   key    = "helloworld.tar.gz"
   source = "${path.module}/helloworld.tar.gz"
   etag   = filemd5("${path.module}/helloworld.tar.gz")
-  acl    = "public-read"
 }
 
 resource "aws_iam_role" "launch_role" {
