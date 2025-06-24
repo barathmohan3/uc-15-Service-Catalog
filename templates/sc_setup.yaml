@@ -31,11 +31,11 @@ Resources:
     Type: AWS::ServiceCatalog::PortfolioProductAssociation
     Properties:
       PortfolioId: !Ref PortfolioId
-      ProductId: !GetAtt Product.Id
+      ProductId: !Ref Product  # ✅ Fix here
 
   LaunchConstraint:
     Type: AWS::ServiceCatalog::LaunchRoleConstraint
     Properties:
       PortfolioId: !Ref PortfolioId
-      ProductId: !GetAtt Product.Id
+      ProductId: !Ref Product  # ✅ Fix here
       RoleArn: !Ref RoleArn
