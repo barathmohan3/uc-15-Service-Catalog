@@ -27,6 +27,14 @@ resource "aws_s3_object" "helloworld_template" {
   etag   = filemd5("${path.module}/artifacts/helloworld.yaml")
 }
 
+resource "aws_s3_object" "index_file" {
+  bucket = aws_s3_bucket.artifact_bucket.id
+  key    = "index.html"
+  source = "${path.module}/artifacts/index.html"
+  content_type = "text/html"
+  etag   = filemd5("${path.module}/artifacts/index.html")
+}
+
 # IAM Role used by Service Catalog to launch the product
 resource "aws_iam_role" "launch_role" {
   name = "ServiceCatalogLaunchRole"
