@@ -47,3 +47,11 @@ resource "aws_cloudformation_stack" "sc_stack" {
     OrgId       = var.organization_id
   }
 }
+
+resource "aws_servicecatalog_portfolio_share" "org_share" {
+  portfolio_id = aws_servicecatalog_portfolio.s3_portfolio.id
+  organization_node {
+    type  = "ORGANIZATION"
+    value = var.org_id
+  }
+}
