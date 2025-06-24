@@ -5,6 +5,7 @@ variable "region" {
 
 variable "bucket_name" {
   description = "Unique S3 bucket name to store artifacts"
+  type        = string
 }
 
 variable "portfolio_name" {
@@ -17,7 +18,8 @@ variable "portfolio_owner" {
   default     = "YourCompany"
 }
 
-variable "org_id" {
+variable "organization_id" {
+  description = "AWS Organization ID (e.g., o-xxxxxxx)"
   type        = string
 }
 
