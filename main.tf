@@ -1,71 +1,66 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.31.0"
-    }
+
+resource "aws_servicecatalog_portfolio" "s3_portfolio" {
+  name          = "S3 Portfolio"
+  description   = "Portfolio for provisioning S3 buckets"
+  provider_name = "YourCompany"
+}
+
+resource "aws_servicecatalog_product" "s3_product" {
+  name          = "S3 Bucket Product"
+  owner         = "YourCompany"
+  type          = "CLOUD_FORMATION_TEMPLATE"
+  provisioning_artifact_parameters {
+    name           = "v1"
+    type           = "CLOUD_FORMATION_TEMPLATE"
+    template_url   = var.template_url
   }
-  required_version = ">= 1.3.0"
 }
 
-provider "aws" {
-  region = var.region
+resource "aws_servicecatalog_product_portfolio_association" "association" {
+  portfolio_id = aws_servicecatalog_portfolio.s3_portfolio.id
+  product_id   = aws_servicecatalog_product.s3_product.id
 }
 
-# S3 bucket and objects
-resource "aws_s3_bucket" "artifact_bucket" {
-  bucket        = var.bucket_name
-  force_destroy = true
-}
 
-resource "aws_s3_object" "helloworld_template" {
-  bucket = aws_s3_bucket.artifact_bucket.id
-  key    = "helloworld.yaml"
-  source = "${path.module}/artifacts/helloworld.yaml"
-  etag   = filemd5("${path.module}/artifacts//helloworld.yaml")
-}
-
-# IAM Launch Role
-resource "aws_iam_role" "launch_role" {
-  name = "ServiceCatalogLaunchRole"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "servicecatalog.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
+resource "aws_servicecatalog_constraint" "template_constraint" {
+  portfolio_id = aws_servicecatalog_portfolio.s3_portfolio.id
+  product_id   = aws_servicecatalog_product.s3_product.id
+  type         = "TEMPLATE"
+  parameters   = jsonencode({
+    Rules = {
+      RegionRule = {
+        Assertions = [
+          {
+            Assert = "Fn::Equals([Ref(\"AWS::Region\"), \"us-east-1\"])"
+            AssertDescription = "S3 buckets must be created in us-east-1"
+          }
+        ]
       }
-    ]
+    }
   })
 }
 
-# Portfolio
-resource "aws_servicecatalog_portfolio" "portfolio" {
-  name          = var.portfolio_name
-  description   = "Portfolio created by Terraform"
-  provider_name = var.portfolio_owner
+resource "aws_servicecatalog_constraint" "launch_constraint" {
+  portfolio_id = aws_servicecatalog_portfolio.s3_portfolio.id
+  product_id   = aws_servicecatalog_product.s3_product.id
+  type         = "LAUNCH"
+  parameters   = jsonencode({
+    RoleArn = var.launch_role_arn
+  })
 }
 
-# CloudFormation stack to create Product, Portfolio association, and LaunchConstraint
-resource "aws_cloudformation_stack" "sc_stack" {
-  name          = "SCProductSetupStack"
-  template_body = file("${path.module}/templates/sc_setup.yaml")
-
-  parameters = {
-    PortfolioId = aws_servicecatalog_portfolio.portfolio.id
-    ArtifactUrl = "https://${aws_s3_bucket.artifact_bucket.bucket}.s3.amazonaws.com/${aws_s3_object.helloworld_template.key}"
-    RoleArn     = aws_iam_role.launch_role.arn
-  }
-
-  capabilities = ["CAPABILITY_NAMED_IAM"]
+resource "aws_servicecatalog_tag_option" "env_tag" {
+  key   = "env"
+  value = "dev"
 }
 
-# Share portfolio with another AWS account
-resource "aws_servicecatalog_portfolio_share" "account_share" {
-  portfolio_id = aws_servicecatalog_portfolio.portfolio.id
-  principal_id = var.account_id  # Must be 12-digit AWS account ID
-  type         = "ACCOUNT"
+resource "aws_servicecatalog_tag_option_resource_association" "tag_association" {
+  resource_id = aws_servicecatalog_product.s3_product.id
+  tag_option_id = aws_servicecatalog_tag_option.env_tag.id
+}
+
+resource "aws_servicecatalog_principal_portfolio_association" "user_access" {
+  portfolio_id   = aws_servicecatalog_portfolio.s3_portfolio.id
+  principal_arn  = var.user_arn
+  principal_type = "IAM"
 }
