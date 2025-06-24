@@ -1,6 +1,0 @@
-region           = "us-east-1"
-bucket_name      = "your-unique-sc-bucket-name"
-portfolio_name   = "HelloWorldPortfolio"
-portfolio_owner  = "BM"
-org_id           = "o-anzgs5qiey"
-account_id       = "211125784755"
