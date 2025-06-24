@@ -5,11 +5,9 @@ Parameters:
   PortfolioId:
     Type: String
     Description: The ID of the existing portfolio
-
   ArtifactUrl:
     Type: String
-    Description: S3 URL to the product's CloudFormation template or Terraform tar.gz
-
+    Description: S3 URL to the product's CloudFormation template
   RoleArn:
     Type: String
     Description: IAM Role ARN to be used as a launch constraint
