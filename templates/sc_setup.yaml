@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Setup AWS Service Catalog Product and Share it across Organization
+Description: Setup AWS Service Catalog Product and Share across the Organization
 
 Parameters:
   PortfolioId:
@@ -7,23 +7,22 @@ Parameters:
     Description: The ID of the existing portfolio
   ArtifactUrl:
     Type: String
-    Description: S3 URL to the product's CloudFormation template or tar.gz
+    Description: S3 URL to the product's CloudFormation template or Terraform tar.gz
   RoleArn:
     Type: String
-    Description: IAM role for launch constraint
+    Description: IAM Role ARN to be used as a launch constraint
   OrgId:
     Type: String
     Description: AWS Organization ID
 
 Resources:
 
-  # 1. Create Product
   Product:
     Type: AWS::ServiceCatalog::CloudFormationProduct
     Properties:
       Name: HelloWorldProduct
       Owner: BM
-      Description: A simple HelloWorld SC product with artifact
+      Description: A simple HelloWorld SC product with a Terraform tarball
       ProvisioningArtifactParameters:
         - Name: v1
           Type: CLOUD_FORMATION_TEMPLATE
@@ -31,27 +30,23 @@ Resources:
           Info:
             LoadTemplateFromURL: !Ref ArtifactUrl
 
-  # 2. Associate Product to Portfolio
   PortfolioAssociation:
     Type: AWS::ServiceCatalog::PortfolioProductAssociation
     Properties:
       PortfolioId: !Ref PortfolioId
       ProductId: !Ref Product
 
-  # 3. Launch Constraint using IAM Role
-  PortfolioShare:
-  Type: AWS::ServiceCatalog::PortfolioShare
-  Properties:
-    PortfolioId: !Ref PortfolioId
-    OrganizationNode:
-      Type: ORGANIZATION
-      Value: !Ref OrgId
+  LaunchConstraint:
+    Type: AWS::ServiceCatalog::LaunchRoleConstraint
+    Properties:
+      PortfolioId: !Ref PortfolioId
+      ProductId: !Ref Product
+      RoleArn: !Ref RoleArn
 
-
-  # 4. Share Portfolio with Organization
   PortfolioShare:
     Type: AWS::ServiceCatalog::PortfolioShare
     Properties:
       PortfolioId: !Ref PortfolioId
-      PrincipalType: ORGANIZATION
-      PrincipalId: !Ref OrgId
+      OrganizationNode:
+        Type: ORGANIZATION
+        Value: !Ref OrgId
