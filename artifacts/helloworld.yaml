@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Create an S3 Bucket with a name provided by the user
+Description: Create an S3 Bucket configured for static website hosting
 
 Parameters:
   BucketName:
@@ -11,3 +11,11 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref BucketName
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+
+Outputs:
+  WebsiteURL:
+    Description: URL of the static website
+    Value: !Sub "http://${BucketName}.s3-website-${AWS::Region}.amazonaws.com"
